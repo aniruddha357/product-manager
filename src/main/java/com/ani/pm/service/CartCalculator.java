@@ -9,13 +9,14 @@ public class CartCalculator {
 
     public double calculate(Client client, ShoppingCart cart) {
 
-        var strategy = switch (client) {
-            case IndividualClient ignored -> new IndividualPricing();
-            case ProfessionalClient pc -> new ProfessionalPricing(pc.annualRevenue());
+        PricingStrategy strategy = switch (client) {
+            case IndividualClient ignored          -> new IndividualPricing();
+            case ProfessionalClient pc             -> new ProfessionalPricing(pc.annualRevenue());
         };
 
         return cart.items().stream()
-                .mapToDouble(i -> strategy.price(i.product()) * i.quantity())
+                .mapToDouble(item -> strategy.price(item.product()) * item.quantity())
                 .sum();
     }
 }
+

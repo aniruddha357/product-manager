@@ -1,28 +1,29 @@
 package com.ani.pm.service;
 
 import com.ani.pm.dto.Product;
-import static com.ani.pm.dto.Product.*;
 
-public class ProfessionalPricing implements PricingStrategy {
+public final class ProfessionalPricing implements PricingStrategy {
 
-    private final double revenue;
+    private static final double ENTERPRISE_THRESHOLD = 10_000_000;
 
-    public ProfessionalPricing(double revenue) {
-        this.revenue = revenue;
+    // Java 21 record for each pricing tier
+    private record Tier(double highEnd, double midRange, double laptop) {}
+
+    private static final Tier ENTERPRISE = new Tier(1000, 550, 900);
+    private static final Tier STANDARD   = new Tier(1150, 600, 1000);
+
+    private final Tier tier;
+
+    public ProfessionalPricing(double annualRevenue) {
+        this.tier = annualRevenue > ENTERPRISE_THRESHOLD ? ENTERPRISE : STANDARD;
     }
 
+    @Override
     public double price(Product product) {
-
-        return revenue > 10_000_000
-                ? switch (product) {
-            case HIGH_END_PHONE -> 1000;
-            case MID_RANGE_PHONE -> 550;
-            case LAPTOP -> 900;
-        }
-                : switch (product) {
-            case HIGH_END_PHONE -> 1150;
-            case MID_RANGE_PHONE -> 600;
-            case LAPTOP -> 1000;
+        return switch (product) {
+            case HIGH_END_PHONE  -> tier.highEnd();
+            case MID_RANGE_PHONE -> tier.midRange();
+            case LAPTOP          -> tier.laptop();
         };
     }
 }
